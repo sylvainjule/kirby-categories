@@ -10,11 +10,11 @@ Kirby::plugin('sylvainjule/categories', array(
                 'default' => function($default = false) {
                     return $default;
                 },
-                'defaultFirst' => function($defaultFirst = false) {
-                    return $defaultFirst;
-                },
                 'limit' => function($limit = 10) {
                     return $limit;
+                },
+                'defaultFirst' => function($defaultFirst = false) {
+                    return $defaultFirst;
                 },
                 'prefix' => function($prefix = 'category-') {
                     return $prefix;
@@ -22,20 +22,6 @@ Kirby::plugin('sylvainjule/categories', array(
                 'value' => function ($value = null) {
                     return Yaml::decode($value);
                 },
-            ],
-            'computed' => [
-                'uri' => function() {
-                    return $this->model()->uri();
-                },
-                'parent' => function () {
-                    return $this->model()->apiUrl(true);
-                },
-                'default' => function() {
-                    return $this->default;
-                },
-                'value' => function () {
-                    return $this->value;
-                }
             ],
         ],
     ],
