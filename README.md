@@ -66,7 +66,7 @@ return [
 ];
 ```
 
-You can then set the categories created within the field as dynamic options of `select`, `multiselect`, `checkboxes`, etc.
+You can then set the categories created with the field as dynamic options of `select`, `multiselect`, `checkboxes`, etc.
 
 ```yaml
 category:
@@ -142,9 +142,9 @@ $text = $page->category()->toCategory($list); // return the category's text in t
 $text = $page->category()->toCategory($list, 'fr'); // returns the category's text in French
 
 // turns
-'category-1' into 'My category'
+'category-1' into 'My category' // returns a string
 // or
-'category-1,category-2' into 'My category,My category 2'
+'category-1,category-2' into ['My category', 'My category 2'] // returns an array
 ```
 
 <br/>
