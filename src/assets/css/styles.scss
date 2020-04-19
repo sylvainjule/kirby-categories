@@ -67,3 +67,19 @@
     }
 }
 
+@media screen and (max-width: 50em) {
+    .k-categories-header {
+        display: none;
+    }
+    .k-categories-item {
+        .language:not(.has-input) {
+            display: none;
+        }
+        .language.has-input {
+            padding-left: 0;
+            .k-input {
+                transform: none;
+            }
+        }
+    }
+}
