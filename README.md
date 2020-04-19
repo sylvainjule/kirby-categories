@@ -42,7 +42,7 @@ fields:
     type: categories
 ```
 
-Second, you need to tell the plugin which `template => fieldname` to watch, by adding this to your config file:
+Second, you need to tell the plugin which `template => fieldname` to watch and sync accross languages, by adding this option to your config file:
 
 ```php
 // site/config/config.php
@@ -54,7 +54,7 @@ return [
 ];
 ```
 
-For example, if you have a `blog` template with a `categories` field, and a `projects` template with `clients` and `techniques` fields, you'll need to set:
+For example, if you have a `blog` template with a `categories` field, and a `projects` template with `clients` + `techniques` fields, you will need to set:
 
 ```php
 // site/config/config.php
@@ -153,9 +153,9 @@ $text = $page->category()->toCategory($list, 'fr'); // returns the category's te
 
 The plugin aims to solve a very specific use-case: managing single-text categories. If you need to have more data associated with each category, this is not the one.
 
-In this case I'd recommend working with pages + [autoid](https://github.com/bnomei/kirby3-autoid), one page per category where you can associate as much metadata as you'd like. You will need to remove the from your index / searchable pages / etc. later on.
+In this case I'd recommend working with pages + [autoid](https://github.com/bnomei/kirby3-autoid), one page per category where you can associate as much metadata as you'd like. You will need to remove them from your index / searchable pages / … later on.
 
-Please let me know if you have other convenient way to deal with complex multi-language categories, for me to add here.
+Let me know if you have other convenient ways to deal with complex multi-language categories, I'll add them here.
 
 <br/>
 
