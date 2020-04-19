@@ -1,0 +1,105 @@
+<?php
+
+Kirby::plugin('sylvainjule/categories', array(
+    'options' => [
+        'watch' => []
+    ],
+    'fields' => [
+        'categories' => [
+            'props'    => [
+                'default' => function($default = false) {
+                    return $default;
+                },
+                'defaultFirst' => function($defaultFirst = false) {
+                    return $defaultFirst;
+                },
+                'limit' => function($limit = 10) {
+                    return $limit;
+                },
+                'prefix' => function($prefix = 'category-') {
+                    return $prefix;
+                },
+                'value' => function ($value = null) {
+                    return Yaml::decode($value);
+                },
+            ],
+            'computed' => [
+                'uri' => function() {
+                    return $this->model()->uri();
+                },
+                'parent' => function () {
+                    return $this->model()->apiUrl(true);
+                },
+                'default' => function() {
+                    return $this->default;
+                },
+                'value' => function () {
+                    return $this->value;
+                }
+            ],
+        ],
+    ],
+    'fieldMethods'  => [
+        'toCategories' => function($field) {
+            $categories = count($field->yaml()) ? $field->yaml()[0] : [];
+            return new Structure($categories);
+        },
+        'toCategory' => function($field, $list, $lang = false, $delim = ',') {
+            $list = $list->toCategories();
+            $categories = [];
+
+            foreach($field->split($delim) as $c) {
+                $category   = $list->findBy('id', $c);
+
+                if(!$category) $categories[] = null;
+
+                if($lang && array_key_exists($lang, $category->translations()->value())) {
+                    $categories[] = $category->translations()->value()[$lang];
+                }
+                else {
+                    $categories[] = $category->text()->value();
+                }
+            }
+
+            return count($categories) == 1 ? $categories[0] : $categories;
+        },
+    ],
+    'hooks' => [
+        'page.update:after' => function($newPage, $oldPage) {
+            if(!option('languages')) return false;
+
+            $watch       = option('sylvainjule.categories.watch');
+            $templates   = array_keys($watch);
+            $template    = $newPage->intendedTemplate()->name();
+
+            if(in_array($template, $templates)) {
+                $fieldnames = $watch[$template];
+                $fieldnames = is_string($fieldnames) ? [$fieldnames] : $fieldnames;
+                $kirby      = kirby();
+                $languages  = $kirby->languages()->not($kirby->language());
+
+                foreach($languages as $l) {
+                    $update = [];
+
+                    foreach($fieldnames as $fieldname) {
+                        if($newPage->$fieldname() !== $oldPage->$fieldname()) {
+                            $categories = $newPage->$fieldname()->yaml();
+
+                            $categories[0] = array_map(function($category) use($l) {
+                                $translations = $category['translations'];
+                                $text         = array_key_exists($l->code(), $translations) ? $translations[$l->code()] : '';
+                                $category['text'] = $text;
+                                return $category;
+                            }, $categories[0]);
+
+                            $update[$fieldname] = $categories;
+                        }
+                    }
+                    if(!empty($update)) {
+                        $newPage->update($update, $l->code());
+                    }
+                }
+            }
+        }
+    ]
+));
