@@ -10,6 +10,9 @@ Kirby::plugin('sylvainjule/categories', array(
                 'default' => function($default = false) {
                     return $default;
                 },
+                'empty' => function($empty = null) {
+                    return $empty ?? t('categories.empty');
+                },
                 'limit' => function($limit = 10) {
                     return $limit;
                 },
@@ -87,5 +90,13 @@ Kirby::plugin('sylvainjule/categories', array(
                 }
             }
         }
-    ]
+    ],
+    'translations' => [
+        'en' => [
+            'categories.empty' => 'No categories yet'
+        ],
+        'fr' => [
+            'categories.empty' => 'Pas encore de catégorie'
+        ],
+    ],
 ));

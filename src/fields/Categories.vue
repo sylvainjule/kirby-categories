@@ -7,7 +7,7 @@
         </template>
 
         <k-empty v-if="isEmpty" icon="tag" @click="addCategory">
-            There is no category yet
+            {{ empty }}
         </k-empty>
         <div v-else class="k-categories-table">
             <div class="k-categories-header">
@@ -43,6 +43,7 @@ export default {
         disabled: Boolean,
         help: String,
         parent: String,
+        empty: String,
         value: [Array],
         name: [String, Number],
         required: Boolean,
