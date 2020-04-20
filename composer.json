@@ -1,12 +1,12 @@
 {
-    "name": "getkirby/pluginkit",
-    "description": "Kirby Example Plugin",
+    "name": "sylvainjule/categories",
+    "description": "Easier multi-language categories management in Kirby",
     "type": "kirby-plugin",
     "license": "MIT",
     "authors": [
         {
-            "name": "Your Name",
-            "email": "you@example.com"
+            "name": "Sylvain Julé",
+            "email": "conact@sylvain-jule.fr"
         }
     ],
     "require": {
