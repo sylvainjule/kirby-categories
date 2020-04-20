@@ -118,7 +118,8 @@ There are few available methods to make handling categories easier. To get the w
 $categories = $page->categories()->toCategories();
 
 foreach($categories as $category) {
-    // ...
+    echo $category->text();
+    // ... see below the list of all properties
 }
 ```
 
