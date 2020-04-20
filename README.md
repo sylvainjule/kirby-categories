@@ -138,7 +138,7 @@ If you have set a `select`, `multiselect`, `checkboxes`, etc. options from a cat
 ```php
 // toCategory($list, $lang = false)
 $list = $page->parent()->categories();
-$text = $page->category()->toCategory($list); // return the category's text in the current language
+$text = $page->category()->toCategory($list); // returns the category's text in the current language
 $text = $page->category()->toCategory($list, 'fr'); // returns the category's text in French
 
 // turns
