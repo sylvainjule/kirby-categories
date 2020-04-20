@@ -1,6 +1,6 @@
 {
     "name": "sylvainjule/categories",
-    "description": "Easier multi-language categories management in Kirby",
+    "description": "Create and manage multi-language categories in Kirby",
     "type": "kirby-plugin",
     "license": "MIT",
     "authors": [
