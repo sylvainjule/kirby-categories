@@ -104,7 +104,9 @@ export default {
 
             this.onInput()
             this.$nextTick(() => {
-                this.$refs[newId][0].focus()
+                if(this.$refs[newId]) {
+                    this.$refs[newId][0].focus()
+                }
             })
         },
         removeCategory(id) {
