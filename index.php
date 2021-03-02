@@ -30,7 +30,7 @@ Kirby::plugin('sylvainjule/categories', array(
     ],
     'fieldMethods'  => [
         'toCategories' => function($field) {
-            $categories = count($field->yaml()) ? $field->yaml()[0] : [];
+            $categories = count($field->yaml()) ? $field->yaml() : [];
             return new Structure($categories);
         },
         'toCategory' => function($field, $list, $lang = false, $delim = ',') {
@@ -51,6 +51,14 @@ Kirby::plugin('sylvainjule/categories', array(
             }
 
             return count($categories) == 1 ? $categories[0] : $categories;
+        },
+    ],
+    'pageMethods' => [
+        'updateCategoriesStructure' => function($fieldname) {
+            $newFieldContent = $this->$fieldname()->yaml()[0];
+            foreach(kirby()->languages() as $l) {
+                $this->save([$fieldname => $newFieldContent], $l->code());
+            }
         },
     ],
     'hooks' => [
@@ -74,18 +82,18 @@ Kirby::plugin('sylvainjule/categories', array(
                         if($newPage->$fieldname() !== $oldPage->$fieldname()) {
                             $categories = $newPage->$fieldname()->yaml();
 
-                            $categories[0] = array_map(function($category) use($l) {
+                            $categories = array_map(function($category) use($l) {
                                 $translations = $category['translations'];
                                 $text         = array_key_exists($l->code(), $translations) ? $translations[$l->code()] : '';
                                 $category['text'] = $text;
                                 return $category;
-                            }, $categories[0]);
+                            }, $categories);
 
                             $update[$fieldname] = $categories;
                         }
                     }
                     if(!empty($update)) {
-                        $newPage->update($update, $l->code());
+                        $newPage->save($update, $l->code());
                     }
                 }
             }
