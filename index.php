@@ -55,9 +55,12 @@ Kirby::plugin('sylvainjule/categories', array(
     ],
     'pageMethods' => [
         'updateCategoriesStructure' => function($fieldname) {
-            $newFieldContent = $this->$fieldname()->yaml()[0];
-            foreach(kirby()->languages() as $l) {
-                $this->save([$fieldname => $newFieldContent], $l->code());
+            $fieldContent = $this->$fieldname()->yaml();
+            if(count($fieldContent) == 2 && is_int($fieldContent[1])) {
+                $newFieldContent = $fieldContent[0];
+                foreach(kirby()->languages() as $l) {
+                    $this->save([$fieldname => $newFieldContent], $l->code());
+                }
             }
         },
     ],
