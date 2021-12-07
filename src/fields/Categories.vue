@@ -73,6 +73,9 @@ export default {
             }
         },
     },
+    created() {
+
+    },
     computed: {
         languages() {
             return this.$store.state.languages ? this.$store.state.languages.all : this.$languages;
@@ -102,7 +105,7 @@ export default {
             return !this.limit || !this.localValue || !this.localValue.length || this.localValue.length < this.limit
         },
         highestIndex() {
-            return this.exists ? this.localValue[0].highestIndex : 0
+            return this.exists ? this.localValue[0].highestIndex || Math.max.apply(Math, this.localValue.map((item) => item.panelIndex)) : 0
         },
         newIndex() {
             return this.highestIndex + 1
