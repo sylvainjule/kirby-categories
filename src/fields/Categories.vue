@@ -101,8 +101,11 @@ export default {
         canAdd() {
             return !this.limit || !this.localValue || !this.localValue.length || this.localValue.length < this.limit
         },
+        highestIndex() {
+            return this.exists ? this.localValue[0].highestIndex : 0
+        },
         newIndex() {
-            return !this.localValue || !this.localValue.length ? 1 : this.localValue.length + 1
+            return this.highestIndex + 1
         },
     },
     methods: {
@@ -114,6 +117,7 @@ export default {
             let newCategory = {
                 id: newId,
                 panelIndex: this.newIndex,
+                highestIndex: this.newIndex,
                 text: '',
                 translations: {}
             }
@@ -121,6 +125,7 @@ export default {
 
             if(this.exists) {
                 this.localValue = [newCategory].concat(this.localValue)
+                this.syncHighestIndex()
             } else {
                 this.localValue = [newCategory]
             }
@@ -135,6 +140,13 @@ export default {
         removeCategory(id) {
             this.localValue = this.localValue.filter(category => category.id !== id)
             this.onInput()
+        },
+        syncHighestIndex() {
+            let highest = Math.max.apply(Math, this.localValue.map((item) => item.panelIndex))
+            this.localValue = this.localValue.map(function(item) {
+                item.highestIndex = highest
+                return item
+            })
         },
         onTextInput(index = false, value) {
             this.localValue[index].text = value
