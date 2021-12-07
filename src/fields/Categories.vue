@@ -75,7 +75,7 @@ export default {
     },
     computed: {
         languages() {
-            return this.$store.state.languages.all
+            return this.$store.state.languages ? this.$store.state.languages.all : this.$languages;
         },
         sortedLanguages() {
             if(!this.defaultFirst) return this.languages
@@ -87,7 +87,7 @@ export default {
             return languages
         },
         currentLanguage() {
-            return this.$store.state.languages.current
+            return this.$store.state.languages ? this.$store.state.languages.current : this.$language
         },
         currentCode() {
             return this.currentLanguage.code
@@ -99,7 +99,7 @@ export default {
             return !this.exists || !this.localValue.length
         },
         canAdd() {
-            return !this.limit || !this.localValue || !this.localValue.length || this.localValue.length < this.limit
+            return !this.limit || !this.localValue || !this.localValue.length || this.localValue.length < this.limit
         },
         newIndex() {
             return !this.localValue || !this.localValue.length ? 1 : this.localValue.length + 1
@@ -145,8 +145,12 @@ export default {
             this.$emit('input', this.localValue)
         },
         changeLanguage(language) {
-            this.$store.dispatch('languages/current', language);
-            this.$emit('change', language);
+            this.$emit("change", language);
+            this.$go(this.$view.path, {
+                query: {
+                    language: language.code
+                }
+            });
         }
     }
 };

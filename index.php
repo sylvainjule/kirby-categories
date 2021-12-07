@@ -86,8 +86,8 @@ Kirby::plugin('sylvainjule/categories', array(
                             $categories = $newPage->$fieldname()->yaml();
 
                             $categories = array_map(function($category) use($l) {
-                                $translations = $category['translations'];
-                                $text         = array_key_exists($l->code(), $translations) ? $translations[$l->code()] : '';
+                                $translations     = $category['translations'];
+                                $text             = array_key_exists($l->code(), $translations) ? $translations[$l->code()] : '';
                                 $category['text'] = $text;
                                 return $category;
                             }, $categories);
