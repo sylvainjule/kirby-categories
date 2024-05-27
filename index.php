@@ -31,7 +31,7 @@ Kirby::plugin('sylvainjule/categories', array(
     'fieldMethods'  => [
         'toCategories' => function($field) {
             $categories = count($field->yaml()) ? $field->yaml() : [];
-            return new Structure($categories);
+            return Structure::factory($categories);
         },
         'toCategory' => function($field, $list, $lang = false, $delim = ',') {
             $list = $list->toCategories();
