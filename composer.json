@@ -3,6 +3,7 @@
     "description": "Create and manage multi-language categories in Kirby",
     "type": "kirby-plugin",
     "license": "MIT",
+    "version": "2.0.0",
     "authors": [
         {
             "name": "Sylvain Julé",

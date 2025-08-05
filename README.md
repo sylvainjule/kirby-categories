@@ -1,25 +1,27 @@
 # Kirby Translated Categories
 
-This plugin helps dealing with translated categories, providing a field with cross-languages sync + unique ids, and a few field methods.
+This plugin helps dealing with translated categories, adding UUIDs to structure fields and the ability to sync their content accross all languages.
 
-![screenshot](https://user-images.githubusercontent.com/14079751/79684385-2bea3880-8231-11ea-8889-a2846b196070.png)
+![Image](https://github.com/user-attachments/assets/18f1a92c-1cfe-4706-b40b-37a6a14e4df0)
 
 <br/>
 
 ## Overview
 
-> This plugin is completely free and published under the MIT license. However, if you are using it in a commercial project and want to help me keep up with maintenance, please consider [making a donation of your choice](https://www.paypal.me/sylvainjl) or purchasing your license(s) through [my affiliate link](https://a.paddle.com/v2/click/1129/36369?link=1170).
+> This plugin is completely free and published under the MIT license. However, if you are using it in a commercial project and want to help me keep up with maintenance, you can consider [making a donation of your choice](https://www.paypal.me/sylvainjl).
 
 - [1. Installation](#1-installation)
 - [2. Panel setup](#2-panel-setup)
 - [3. Options](#3-options)
 - [4. Frontend usage](#4-frontend-usage)
-- [5. Alternatives](#5-alternatives)
+- [5. Caveats](#5-caveats)
 - [6. License](#6-license)
 
 <br/>
 
 ## 1. Installation
+
+> Version **2.0.0** introduces breaking changes from previous 1.x.x versions (explained and documented in the release), and is compatible with Kirby 5 only.
 
 Download and copy this repository to ```/site/plugins/categories```
 
@@ -29,44 +31,47 @@ Alternatively, you can install it with composer: ```composer require sylvainjule
 
 ## 2. Panel setup
 
-The intent of the `categories` field is to allow an editor to easily create and manage multi-language categories, while keeping the field's content synced between languages in order to keep IDs unique. **It will only work in multi-language setups.**
+This plugin allows an editor to easily create and manage multi-language categories, while keeping the field's content synced between languages in order to keep IDs unique. **It will only work in multi-language setups.**
+
+Whenever a user adds a new item to a synced structure field, all languages inherits the new item. 
+Whenever a user deletes an item from a synced structure field, it is deleted from all languages.
+Whenever a user sorts a synced structure field, the new sort order is applied in all languages.
 
 It requires two steps:
 
-First, add the field anywhere in your blueprints:
+First, add a structure field anywhere in your blueprints:
 
 ```yaml
 fields:
   categories:
     label: Categories
-    type: categories
+    type: structure
 ```
 
-Second, you need to tell the plugin which `template => fieldname` to watch and sync accross languages, by adding this option to your config file:
+Second, you need to tell the plugin which `template => fieldname` to watch and sync accross languages, by adding this option to your config file
 
 ```php
 // site/config/config.php
-return [
-    'sylvainjule.categories.watch' => [
-        'template' => 'fieldname',
-        'template' => ['fieldname1', 'fieldname2'],
-    ]
-];
+'sylvainjule.categories.watch' => [
+    'template' => 'fieldname',
+    'template' => ['fieldname1', 'fieldname2'],
+    'site'     => 'fieldname', # can also be used with the site.yml blueprint
+]
 ```
 
 For example, if you have a `blog` template with a `categories` field, and a `projects` template with `clients` + `techniques` fields, you will need to set:
 
 ```php
 // site/config/config.php
-return [
-    'sylvainjule.categories.watch' => [
-        'blog'     => 'categories',
-        'projects' => ['clients', 'techniques'],
-    ]
-];
+'sylvainjule.categories.watch' => [
+    'blog'     => 'categories',
+    'projects' => ['clients', 'techniques'],
+]
 ```
 
-You can then set the categories created with the field as dynamic options of `select`, `multiselect`, `checkboxes`, etc.
+You can then set the categories created with the field as dynamic options of `select`, `multiselect`, `checkboxes`, etc. Refer to [the official documentation](https://getkirby.com/docs/reference/panel/fields/multiselect#options-from-other-fields__options-from-structure-field) about using structure field items as options.
+
+Since the plugin makes sure that a given category shares the same UUID accross all languages, use `{{ structureItem.uuid }}` as an immutable value. The `text` property can be any field from your structure.
 
 ```yaml
 category:
@@ -75,88 +80,98 @@ category:
   options: query
   query:
     fetch: page.parent.categories.toCategories
-    text: "{{ structureItem.text }}"
-    value: "{{ structureItem.id }}"
+    text: "{{ structureItem.fieldname }}"
+    value: "{{ structureItem.uuid }}"
 ```
 
 <br>
 
+
 ## 3. Options
 
-### 3.1. Prefix
+### 3.1. Watch
 
-The plugin stores an ID for each list item : `{{prefix}}-{{index}}`. The index is automatically incremented everytime a new category is added, but you can choose the prefix you'd like for each field (default is `category-`):
+An array of `template => [fields]` pairs to watch (default is `empty | []`). See above for examples. 
 
-```yaml
-fields:
-  countries:
-    label: Countries
-    type: categories
-    prefix: country- # the field will store country-1, country-2, etc.
+```php
+'sylvainjule.categories.watch' => []
 ```
 
-### 3.2. defaultFirst
+### 3.2. Hook
 
-By default, languages are displayed in alphabetical order. If you want to have the default language appear first, set this option to `true`. Default is `false`.
+Setting this option to `false` (default is `true`) will prevent the plugin to apply any change in the `page.update:after` | `site.update:after` hooks (you would then have to manually call it, see [5. Caveats](#5-caveats)).
 
-```yaml
-fields:
-  countries:
-    label: Countries
-    type: categories
-    defaultFirst: true
+```php
+'sylvainjule.categories.hook' => true,
 ```
 
 <br>
 
 ## 4. Frontend usage
 
-There are few available methods to make handling categories easier. To get the whole categories list:
+You can use the field like any other Structure, but knowing your categories share an immutable UUID accross languages. Few examples:
 
 ```php
-// returns a Structure
-$categories = $page->categories()->toCategories();
+// select field
+$categories = $page->parent()->categories()->toCategories(); // our structure field
+$category   = $page->category(); // a select field value referencing structureItem.uuid
+$category   = $categories->findBy('uuid', $category); // we convert this UUID into the associated Structure Object
 
-foreach($categories as $category) {
-    echo $category->text();
-    // ... see below the list of all properties
-}
+// multiselect field
+$categories         = $page->parent()->categories()->toCategories(); // our structure field
+$selectedArray      = $page->categories()->split(); // a multiselect field value referencing structureItem.uuid
+$selectedCategories = $categories->filter(function($category) use($selectedArray) {
+  return in_array($category->uuid()->value(), $selectedArray);
+}); // we convert this array of UUIDs into a filtered Structure
+
+...
 ```
 
-From there you have access to a Structure Object with the following properties:
-
-```yaml
-# content of a category
-id: category-1       # $category->id()
-text: 'My category'  # $category->text()
-translations:        # $category->translations(), Array
-  en: 'My category'  # $category->translations()['en']
-  fr: 'Ma catégorie' # $category->translations()['fr']
-```
-
-If you have set a `select`, `multiselect`, `checkboxes`, etc. options from a categories field, the field will have stored the ID of the category. To get the text from there:
-
-```php
-// toCategory($list, $lang = false)
-$list = $page->parent()->categories();
-$text = $page->category()->toCategory($list); // returns the category's text in the current language
-$text = $page->category()->toCategory($list, 'fr'); // returns the category's text in French
-
-// turns
-'category-1' into 'My category' // returns a string
-// or
-'category-1,category-2' into ['My category', 'My category 2'] // returns an array
-```
 
 <br/>
 
-## 5. Alternatives
+## 5. Caveats
 
-The plugin aims to solve a very specific use-case: managing single-text categories. If you need to have more data associated with each category, this is not the one.
+The plugin registers two hooks (`site.update:after`, `page.update:after`) to save data in content files. To my understanding you should avoid running multiple hooks which save content in the same files to prevent any conflict.
 
-In this case I'd recommend working with pages + [autoid](https://github.com/bnomei/kirby3-autoid), one page per category where you can associate as much metadata as you'd like. You will need to remove them from your index / searchable pages / … later on.
+If your project or another plugin registers these hooks, few options:
+- Make sure it doesn't call the `$newPage->save()` or `$newSite->save()` method.
+- Make sure it doesn't call the `$newPage->save()` method on a template watched by the plugin (ie. added in the `sylvainjule.categories.watch` option).
+- Make sure you disable the plugin's hook by setting `'sylvainjule.categories.hook' => false`, and call its logic in your own hook, in order to call the `->save()` method only once:
 
-Let me know if you have other convenient ways to deal with complex multi-language categories, I'll add them here.
+```php
+'page.update:after' => function($newPage, $oldPage) {
+    // get the array of changes to apply
+    // $changes = [
+    //     'en' => [
+    //         'fieldname1' => $data,
+    //         'fieldname2' => $data,
+    //     ],
+    //     'de' => [
+    //         'fieldname1' => $data,
+    //         'fieldname2' => $data,
+    //     ],
+    //     ...
+    // ]
+    $changes = $categories->getChangesArray($this, $newPage, $oldPage);
+
+    // logic to merge into your own hook / save to make sure content is saved in all languages
+    $currentLanguage = $this->language();
+    $currentCode     = $currentLanguage->code();
+    $otherLanguages  = $this->languages()->not($currentLanguage);
+
+    if(array_key_exists($currentCode, $changes)) {
+        $newPage = $newPage->save($changes[$currentCode], $currentCode);
+    }
+    foreach($otherLanguages as $lang) {
+        if(array_key_exists($lang->code(), $changes)) {
+            $newPage = $newPage->save($changes[$lang->code()], $lang->code());
+        }
+    }
+},
+
+```
+
 
 <br/>
 
