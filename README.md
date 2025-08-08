@@ -33,8 +33,8 @@ Alternatively, you can install it with composer: ```composer require sylvainjule
 
 This plugin allows an editor to easily create and manage multi-language categories, while keeping the field's content synced between languages in order to keep IDs unique. **It will only work in multi-language setups.**
 
-Whenever a user adds a new item to a synced structure field, all languages inherits the new item. 
-Whenever a user deletes an item from a synced structure field, it is deleted from all languages.
+Whenever a user adds a new item to a synced structure field, all languages inherit the new item.<br/>
+Whenever a user deletes an item from a synced structure field, it is deleted from all languages.<br/>
 Whenever a user sorts a synced structure field, the new sort order is applied in all languages.
 
 It requires two steps:
