@@ -21,7 +21,7 @@ This plugin helps dealing with translated categories, adding UUIDs to structure 
 
 ## 1. Installation
 
-> Version **2.0.0** introduces breaking changes from previous 1.x.x versions (explained and documented in the release), and is compatible with Kirby 5 only.
+> Version **2.0.0** introduces breaking changes from previous 1.x.x versions (explained and documented in the release). Versions **2.x** are compatible with Kirby 5 and Kirby 6.
 
 Download and copy this repository to ```/site/plugins/categories```
 
@@ -79,7 +79,7 @@ category:
   type: select
   options: query
   query:
-    fetch: page.parent.categories.toCategories
+    fetch: page.parent.categories.toStructure
     text: "{{ structureItem.fieldname }}"
     value: "{{ structureItem.uuid }}"
 ```
@@ -113,12 +113,12 @@ You can use the field like any other Structure, but knowing your categories shar
 
 ```php
 // select field
-$categories = $page->parent()->categories()->toCategories(); // our structure field
+$categories = $page->parent()->categories()->toStructure(); // our structure field
 $category   = $page->category(); // a select field value referencing structureItem.uuid
 $category   = $categories->findBy('uuid', $category); // we convert this UUID into the associated Structure Object
 
 // multiselect field
-$categories         = $page->parent()->categories()->toCategories(); // our structure field
+$categories         = $page->parent()->categories()->toStructure(); // our structure field
 $selectedArray      = $page->categories()->split(); // a multiselect field value referencing structureItem.uuid
 $selectedCategories = $categories->filter(function($category) use($selectedArray) {
   return in_array($category->uuid()->value(), $selectedArray);

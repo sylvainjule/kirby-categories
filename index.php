@@ -9,7 +9,7 @@ Kirby::plugin('sylvainjule/categories', array(
     ],
     'hooks' => [
         'page.update:after' => function($newPage, $oldPage) {
-            if(!option('languages') || !option('sylvainjule.categories.hook')) return;
+            if(!$this->multilang() || !option('sylvainjule.categories.hook')) return;
 
             $categories = new Categories();
             $changes    = $categories->getChangesArray($this, $newPage, $oldPage);
@@ -21,7 +21,7 @@ Kirby::plugin('sylvainjule/categories', array(
             return $newPage;
         },
         'site.update:after' => function($newSite, $oldSite) {
-            if(!option('languages') || !option('sylvainjule.categories.hook')) return;
+            if(!$this->multilang() || !option('sylvainjule.categories.hook')) return;
 
             $categories = new Categories();
             $changes    = $categories->getChangesArray($this, $newSite, $oldSite);

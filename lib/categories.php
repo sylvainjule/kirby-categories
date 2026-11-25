@@ -21,7 +21,7 @@ class Categories {
                 $oldData = $oldPage->content($currentCode)->get($fieldname)->yaml();
                 $data    = $newPage->content($currentCode)->get($fieldname)->yaml();
 
-                if($data === $oldData || !count($data)) continue;
+                if($data === $oldData) continue;
 
                 $data = array_map(function($item) {
                     if(empty($item['uuid'])) {
@@ -36,11 +36,15 @@ class Categories {
                     $langCode    = $lang->code();
                     $langData    = $newPage->content($langCode)->get($fieldname)->yaml();
                     $newLangData = [];
+                    $langByUuid  = [];
 
+                    foreach($langData as $langItem) {
+                        if(!empty($langItem['uuid'])) {
+                            $langByUuid[$langItem['uuid']] = $langItem;
+                        }
+                    }
                     foreach($data as $item) {
-                        $index = array_search($item['uuid'], array_column($langData, 'uuid'));
-
-                        $newLangData[] = $index > -1 ? $langData[$index] : $item;
+                        $newLangData[] = $langByUuid[$item['uuid']] ?? $item;
                     }
 
                     $changes[$langCode][$fieldname] = Data::encode($newLangData, 'yaml');
