@@ -14,7 +14,7 @@ This plugin helps dealing with translated categories, adding UUIDs to structure 
 - [2. Panel setup](#2-panel-setup)
 - [3. Options](#3-options)
 - [4. Frontend usage](#4-frontend-usage)
-- [5. Caveats](#5-caveats)
+- [5. Compatibility with other hooks](#5-compatibility-with-other-hooks)
 - [6. License](#6-license)
 
 <br/>
@@ -77,6 +77,13 @@ Since the plugin makes sure that a given category shares the same UUID accross a
 category:
   label: Category
   type: select
+  # kirby 6 ↓
+  options:
+    type: query
+    query: page.parent.categories.toStructure
+    text: "{{ item.name }}"
+    value: "{{ item.uuid }}"
+  # kirby 5 ↓
   options: query
   query:
     fetch: page.parent.categories.toStructure
@@ -99,7 +106,7 @@ An array of `template => [fields]` pairs to watch (default is `empty | []`). See
 
 ### 3.2. Hook
 
-Setting this option to `false` (default is `true`) will prevent the plugin to apply any change in the `page.update:after` | `site.update:after` hooks (you would then have to manually call it, see [5. Caveats](#5-caveats)).
+Setting this option to `false` (default is `true`) will prevent the plugin to apply any change in the `page.update:after` | `site.update:after` hooks (you would then have to manually call it, see [5. Compatibility with other hooks](#5-compatibility-with-other-hooks)).
 
 ```php
 'sylvainjule.categories.hook' => true,
@@ -130,45 +137,39 @@ $selectedCategories = $categories->filter(function($category) use($selectedArray
 
 <br/>
 
-## 5. Caveats
+## 5. Compatibility with other hooks
 
-The plugin registers two hooks (`site.update:after`, `page.update:after`) to save data in content files. To my understanding you should avoid running multiple hooks which save content in the same files to prevent any conflict.
+The plugin uses the `site.update:after` and `page.update:after` hooks to synchronize structure fields across languages.
 
-If your project or another plugin registers these hooks, few options:
-- Make sure it doesn't call the `$newPage->save()` or `$newSite->save()` method.
-- Make sure it doesn't call the `$newPage->save()` method on a template watched by the plugin (ie. added in the `sylvainjule.categories.watch` option).
-- Make sure you disable the plugin's hook by setting `'sylvainjule.categories.hook' => false`, and call its logic in your own hook, in order to call the `->save()` method only once:
+If your project or another plugin registers additional hooks that modify the same model, it is recommended to always return the updated instance:
 
 ```php
 'page.update:after' => function($newPage, $oldPage) {
-    // get the array of changes to apply
-    // $changes = [
-    //     'en' => [
-    //         'fieldname1' => $data,
-    //         'fieldname2' => $data,
-    //     ],
-    //     'de' => [
-    //         'fieldname1' => $data,
-    //         'fieldname2' => $data,
-    //     ],
-    //     ...
-    // ]
-    $changes = $categories->getChangesArray($this, $newPage, $oldPage);
+    return $newPage->save([
+        'somefield' => 'somevalue'
+    ]);
+}
+```
 
-    // logic to merge into your own hook / save to make sure content is saved in all languages
-    $currentLanguage = $this->language();
-    $currentCode     = $currentLanguage->code();
-    $otherLanguages  = $this->languages()->not($currentLanguage);
+If you run into issues or for integrations where you need full control over the synchronization process or the order of updates, you can disable the plugin's built-in hooks:
 
-    if(array_key_exists($currentCode, $changes)) {
-        $newPage = $newPage->save($changes[$currentCode], $currentCode);
+```php
+'sylvainjule.categories.hook' => false,
+```
+
+And call its synchronization methods manually in yours:
+
+```php
+'page.update:after' => function($newPage, $oldPage) {
+    $categories = new Categories();
+    $changes    = $categories->getChangesArray($this, $newPage, $oldPage);
+
+    if(count($changes)) {
+        $newPage = $categories->saveChanges($this, $newPage, $changes);
     }
-    foreach($otherLanguages as $lang) {
-        if(array_key_exists($lang->code(), $changes)) {
-            $newPage = $newPage->save($changes[$lang->code()], $lang->code());
-        }
-    }
-},
+
+    return $newPage;
+}
 
 ```
 
